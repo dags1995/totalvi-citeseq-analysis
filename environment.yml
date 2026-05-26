@@ -12,8 +12,8 @@ dependencies:
   - matplotlib
   - seaborn
   - requests
-  - python-igraph
   - leidenalg
+  - python-igraph
   - pip:
       - scanpy
       - scvi-tools
