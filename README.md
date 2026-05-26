@@ -89,3 +89,17 @@ This file should be placed in:
 `data/raw/`
 
 
+---
+
+## 3. First notebook: load CITE-seq data
+
+The first notebook of the workflow is:
+
+`notebooks/01_totalVI_MALT_CITEseq.ipynb`
+
+The first goal is to load the 10x Genomics CITE-seq file and verify that it contains both RNA and ADT protein features.
+
+This step will check the feature types present in the dataset:
+
+- `Gene Expression`: RNA counts
+- `Antibody Capture`: ADT protein counts
