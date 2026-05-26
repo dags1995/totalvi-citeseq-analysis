@@ -103,3 +103,20 @@ This step will check the feature types present in the dataset:
 
 - `Gene Expression`: RNA counts
 - `Antibody Capture`: ADT protein counts
+
+
+---
+
+## 4. Separate RNA and ADT protein features using MuData
+
+After loading the 10x CITE-seq file, the workflow separates the two feature types into independent `AnnData` objects:
+
+- `Gene Expression`: RNA count matrix
+- `Antibody Capture`: ADT protein count matrix
+
+Following the official `totalVI` tutorial, both modalities will be stored in a single `MuData` object:
+
+- `mdata.mod["rna"]` contains the RNA data.
+- `mdata.mod["prot"]` contains the ADT protein data.
+
+
