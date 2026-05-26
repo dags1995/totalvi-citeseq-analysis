@@ -1,0 +1,18 @@
+name: totalvi_env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - jupyter
+  - ipykernel
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - seaborn
+  - requests
+  - pip:
+      - scanpy
+      - scvi-tools
+      - muon
