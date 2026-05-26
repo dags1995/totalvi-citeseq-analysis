@@ -27,7 +27,8 @@ totalvi-citeseq-analysis/
 ├── README.md
 ├── environment.yml
 ├── notebooks/
-│   └── 01_totalVI_MALT_test.ipynb
+│   ├── 01_totalVI_MALT_CITEseq_preprocessing.ipynb
+│   └── 02_totalVI_MALT_model_training.ipynb
 ├── scripts/
 ├── data/
 │   ├── raw/
@@ -95,7 +96,7 @@ This file should be placed in:
 
 The first notebook of the workflow is:
 
-`notebooks/01_totalVI_MALT_CITEseq.ipynb`
+`notebooks/01_totalVI_MALT_CITEseq_preprocessing.ipynb`
 
 The first goal is to load the 10x Genomics CITE-seq file and verify that it contains both RNA and ADT protein features.
 
@@ -107,16 +108,47 @@ This step will check the feature types present in the dataset:
 
 ---
 
-## 4. Separate RNA and ADT protein features using MuData
+## 4. Preprocessed MuData object
 
-After loading the 10x CITE-seq file, the workflow separates the two feature types into independent `AnnData` objects:
+The first notebook separates the CITE-seq data into two modalities:
 
-- `Gene Expression`: RNA count matrix
-- `Antibody Capture`: ADT protein count matrix
+- `mdata.mod["rna"]`: RNA count matrix
+- `mdata.mod["prot"]`: ADT protein count matrix
 
-Following the official `totalVI` tutorial, both modalities will be stored in a single `MuData` object:
+Raw RNA counts are stored in:
 
-- `mdata.mod["rna"]` contains the RNA data.
-- `mdata.mod["prot"]` contains the ADT protein data.
+- `mdata.mod["rna"].layers["counts"]`
+
+The preprocessed multimodal object is saved locally as:
+
+- `data/processed/malt_citeseq_mudata.h5mu`
+
+
+---
+
+## 5. Second notebook: totalVI model training
+
+The second notebook of the workflow is:
+
+`notebooks/02_totalVI_MALT_model_training.ipynb`
+
+This notebook uses the preprocessed MuData object generated in the first notebook:
+
+`data/processed/malt_citeseq_mudata.h5mu`
+
+The RNA and ADT protein modalities are converted into the AnnData format expected by `totalVI`.
+
+The model is trained for 100 epochs and an integrated RNA + ADT latent representation is extracted:
+
+`adata.obsm["X_totalVI"]`
+
+The resulting latent space has shape:
+
+`8412 cells × 20 latent dimensions`
+
+The trained outputs are saved locally as:
+
+- `data/processed/malt_totalvi_trained.h5ad`
+- `results/models/totalvi_malt_model/`
 
 
