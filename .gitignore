@@ -1,0 +1,24 @@
+# Environments
+.env
+.venv
+__pycache__/
+.ipynb_checkpoints/
+
+# Data
+data/raw/*
+data/processed/*
+*.h5ad
+*.h5
+*.h5seurat
+*.mtx
+*.mtx.gz
+*.tsv.gz
+*.csv.gz
+
+# Models and results
+results/models/*
+*.pt
+*.ckpt
+
+# System
+.DS_Store

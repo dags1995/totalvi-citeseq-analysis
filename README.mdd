@@ -1,0 +1,19 @@
+# totalVI CITE-seq analysis
+
+This repository documents a reproducible workflow to analyze CITE-seq data using totalVI from scvi-tools, following the tutorial: https://docs.scvi-tools.org/en/1.3.3/tutorials/notebooks/multimodal/totalVI.html
+
+## Objective
+
+The goal is to build a clean and reproducible workflow for integrating RNA and ADT protein measurements from CITE-seq data using totalVI.
+
+## Workflow
+
+1. Create Conda environment.
+2. Load CITE-seq data.
+3. Separate RNA and ADT protein features.
+4. Prepare AnnData object.
+5. Train totalVI model.
+6. Extract integrated latent representation.
+7. Generate UMAP and clustering.
+8. Visualize protein expression on the integrated embedding.
+
