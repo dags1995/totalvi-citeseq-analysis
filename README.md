@@ -41,17 +41,7 @@ totalvi-citeseq-analysis/
 
 ---
 
-## 1. Clone the repository
-
-```bash
-git clone https://github.com/dags1995/totalvi-citeseq-analysis.git
-cd totalvi-citeseq-analysis
-```
-
-
----
-
-## 2. Create the Conda environment
+## 1. Create the Conda environment
 
 Create the environment from the provided `environment.yml` file:
 
@@ -73,9 +63,7 @@ python -m ipykernel install --user --name=totalvi_env --display-name "totalvi_en
 
 ---
 
-## 3. Check the installation
-
-Run:
+To check the installation run:
 
 ```bash
 python -c "import scipy; import scanpy as sc; import scvi; import muon; import torch; print('scipy', scipy.__version__); print('scanpy', sc.__version__); print('scvi-tools', scvi.__version__); print('torch', torch.__version__)"
@@ -84,3 +72,20 @@ python -c "import scipy; import scanpy as sc; import scvi; import muon; import t
 If this command runs without errors, the environment is ready.
 
 ---
+
+
+## 2. Data 
+
+For this example, we will use the CITE-seq data provided in the `sciPENN_codes` repository (https://github.com/jlakkis/sciPENN_codes). The original data files are available from the Box link provided by the sciPENN authors:
+
+https://upenn.app.box.com/s/1p1f1gblge3rqgk97ztr4daagt4fsue5
+
+For this first `totalVI` workflow, we will use the following 10x Genomics CITE-seq file: 
+
+`malt_10k_protein_v3_filtered_feature_bc_matrix.h5`
+
+This file should be placed in:
+
+`data/raw/`
+
+
