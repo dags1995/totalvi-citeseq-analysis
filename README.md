@@ -152,3 +152,29 @@ The trained outputs are saved locally as:
 - `results/models/totalvi_malt_model/`
 
 
+---
+
+## 6. Third notebook: latent space visualization
+
+The third notebook of the workflow will be:
+
+`notebooks/03_totalVI_MALT_latent_visualization.ipynb`
+
+This notebook will use the trained AnnData object generated in the second notebook:
+
+`data/processed/malt_totalvi_trained.h5ad`
+
+The objective of this notebook is to:
+
+1. load the trained AnnData object;
+2. use the integrated latent representation stored in `adata.obsm["X_totalVI"]`;
+3. compute the neighborhood graph using the totalVI latent space;
+4. generate a UMAP embedding;
+5. perform Leiden clustering;
+6. visualize the integrated latent space.
+
+The main downstream analysis will use:
+
+`adata.obsm["X_totalVI"]`
+
+This representation contains the integrated RNA + ADT protein information learned by `totalVI`.
