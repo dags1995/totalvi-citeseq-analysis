@@ -28,6 +28,7 @@ data/processed/**
 results/models/*
 *.pt
 *.ckpt
+*.png
 
 # System
 .DS_Store
