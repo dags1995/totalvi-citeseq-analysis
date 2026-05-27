@@ -1,22 +1,39 @@
-# totalVI CITE-seq analysis
+# Longitudinal totalVI CITE-seq analysis
 
-This repository documents a reproducible workflow to analyze CITE-seq data using totalVI from scvi-tools, following the tutorial: https://docs.scvi-tools.org/en/1.3.3/tutorials/notebooks/multimodal/totalVI.html
+This repository documents a reproducible workflow to analyze longitudinal CITE-seq data using totalVI from scvi-tools.
+
+The workflow is based on the official totalVI tutorials from scvi-tools:
+https://docs.scvi-tools.org/en/stable/tutorials/notebooks/use_cases/preprocessing.html#cite-seq
+https://docs.scvi-tools.org/en/1.3.3/tutorials/notebooks/multimodal/totalVI.html
 
 ## Objective
 
-The goal is to build a clean and reproducible workflow for integrating RNA and ADT protein measurements from CITE-seq data using totalVI.
+The goal of this project is to adapt a totalVI-based CITE-seq workflow to a longitudinal experimental design with four timepoints and one sample per timepoint.
+
+At the current development stage, the workflow is tested using the two tutorial CITE-seq samples. The code structure is prepared for four timepoints, but the sections corresponding to T3 and T4 are kept as placeholders until the real data are available.
+
+
+---
 
 ## Workflow
 
 1. Create Conda environment.
-2. Load CITE-seq data.
-3. Separate RNA and ADT protein features.
-4. Prepare AnnData object.
-5. Train totalVI model.
-6. Extract integrated latent representation.
-7. Generate UMAP and clustering.
-8. Visualize protein expression on the integrated embedding.
-
+2. Load CITE-seq samples.
+3. Assign sample-level metadata:
+   - `sample_id`
+   - `timepoint`
+   - `batch`
+4. Pre-process and merge the samples into a single multi-sample object.
+5. Format the integrated object for totalVI.
+6. Train the totalVI model using batch information.
+7. Extract the integrated RNA + ADT latent representation.
+8. Generate UMAP and clustering.
+9. Visualize the integrated embedding by:
+   - batch
+   - timepoint
+   - cluster
+   - protein expression
+10. Compare cellular populations and molecular profiles across timepoints.
 
 ---
 
@@ -27,18 +44,30 @@ totalvi-citeseq-analysis/
 ├── README.md
 ├── environment.yml
 ├── notebooks/
-│   ├── 01_totalVI_MALT_CITEseq_preprocessing.ipynb
-│   └── 02_totalVI_MALT_model_training.ipynb
+│   ├── 01_totalVI_CITEseq_preprocessing.ipynb
+│   ├── 02_totalVI_multisample_integration.ipynb
+│   ├── 03_totalVI_model_training.ipynb
+│   └── 04_totalVI_latent_visualization.ipynb
 ├── scripts/
 ├── data/
 │   ├── raw/
-│   └── processed/
-├── results/
-│   ├── figures/
-│   └── models/
-└── .gitignore
-```
+│   │   ├── T1/
+│   │   ├── T2/
+│   │   ├── T3/        # placeholder
+│   │   └── T4/        # placeholder
+│   ├── processed/
+│   │   ├── T1/
+│   │   ├── T2/
+│   │   ├── T3/        # placeholder
+│   │   └── T4/        # placeholder
+│   └── integrated/
+└── results/
+    ├── figures/
+    ├── models/
+    ├── qc/
+    └── longitudinal_comparison/
 
+```
 
 ---
 
@@ -62,9 +91,7 @@ Register the environment as a Jupyter kernel:
 python -m ipykernel install --user --name=totalvi_env --display-name "totalvi_env"
 ```
 
----
-
-To check the installation run:
+To check the installation, run:
 
 ```bash
 python -c "import scipy; import scanpy as sc; import scvi; import muon; import torch; print('scipy', scipy.__version__); print('scanpy', sc.__version__); print('scvi-tools', scvi.__version__); print('torch', torch.__version__)"
@@ -74,107 +101,130 @@ If this command runs without errors, the environment is ready.
 
 ---
 
+## 2. Data
 
-## 2. Data 
+This project is designed for a longitudinal CITE-seq study with four timepoints and one sample per timepoint.
 
-For this example, we will use the CITE-seq data provided in the `sciPENN_codes` repository (https://github.com/jlakkis/sciPENN_codes). The original data files are available from the Box link provided by the sciPENN authors:
+The final expected structure is:
 
-https://upenn.app.box.com/s/1p1f1gblge3rqgk97ztr4daagt4fsue5
+```text
+data/raw/
+├── T1/
+├── T2/
+├── T3/
+└── T4/
+```
 
-For this first `totalVI` workflow, we will use the following 10x Genomics CITE-seq file: 
+At the current development stage, only two tutorial samples are used:
 
-`malt_10k_protein_v3_filtered_feature_bc_matrix.h5`
+```text
+T1 = PBMC 10k CITE-seq sample
+T2 = PBMC 5k CITE-seq sample
+```
 
-This file should be placed in:
+The `T3` and `T4` folders are kept as placeholders for future real longitudinal samples.
 
-`data/raw/`
+The tutorial data are downloaded from 10x Genomics using `pooch`, following the same logic used in the original totalVI/scvi-tools preprocessing workflow. The downloaded files correspond to the original filtered 10x Genomics feature-barcode matrices, not to a preprocessed `.h5mu` object.
 
+The active input files are stored as:
+
+```text
+data/raw/
+├── T1/
+│   └── CITE-seq_pbmc_10k.untar/
+│       └── filtered_feature_bc_matrix/
+│           ├── barcodes.tsv.gz
+│           ├── features.tsv.gz
+│           └── matrix.mtx.gz
+├── T2/
+│   └── CITE-seq_pbmc_5k.untar/
+│       └── filtered_feature_bc_matrix/
+│           ├── barcodes.tsv.gz
+│           ├── features.tsv.gz
+│           └── matrix.mtx.gz
+├── T3/
+│   └── .gitkeep
+└── T4/
+    └── .gitkeep
+```
+
+The corresponding source datasets are:
+
+```text
+T1: pbmc_10k_protein_v3_filtered_feature_bc_matrix.tar.gz
+T2: 5k_pbmc_protein_v3_filtered_feature_bc_matrix.tar.gz
+```
+
+The files are not tracked by Git. Only the folder structure is kept using `.gitkeep` files.
 
 ---
 
-## 3. First notebook: load CITE-seq data
+## 3. Sample metadata
+
+Each sample is assigned metadata before integration.
+
+The minimum required metadata are:
+
+```text
+sample_id
+timepoint
+batch
+```
+
+For the tutorial test run, the active samples are:
+
+```text
+sample_id     timepoint     batch
+sample_T1     T1            batch_1
+sample_T2     T2            batch_2
+```
+
+The future samples are prepared but not executed:
+
+```text
+# sample_T3   T3            batch_3
+# sample_T4   T4            batch_4
+```
+
+This structure allows the same workflow to be used first with the tutorial data and later with the full longitudinal dataset.
+
+---
+
+## 4. First notebook: CITE-seq preprocessing
 
 The first notebook of the workflow is:
 
-`notebooks/01_totalVI_MALT_CITEseq_preprocessing.ipynb`
+```text
+notebooks/01_totalVI_CITEseq_preprocessing.ipynb
+```
 
-The first goal is to load the 10x Genomics CITE-seq file and verify that it contains both RNA and ADT protein features.
+The objective of this notebook is to load the original 10x Genomics CITE-seq matrices for each active timepoint and perform the preprocessing steps required before totalVI model training.
 
-This step will check the feature types present in the dataset:
+The notebook checks that each dataset contains both RNA and ADT protein features:
 
 - `Gene Expression`: RNA counts
 - `Antibody Capture`: ADT protein counts
 
+Each sample is processed individually before integration.
+
+For each active sample, the notebook:
+
+1. loads the 10x Genomics matrix using `scanpy.read_10x_mtx`;
+2. separates RNA and ADT protein features;
+3. stores raw RNA counts;
+4. assigns sample-level metadata;
+5. saves the preprocessed object.
+
+The expected output files are:
+
+```text
+data/processed/T1/t1_citeseq_mudata.h5mu
+data/processed/T2/t2_citeseq_mudata.h5mu
+# data/processed/T3/t3_citeseq_mudata.h5mu
+# data/processed/T4/t4_citeseq_mudata.h5mu
+```
+
+T3 and T4 are included as placeholders but are not executed in the current tutorial-based test.
 
 ---
 
-## 4. Preprocessed MuData object
-
-The first notebook separates the CITE-seq data into two modalities:
-
-- `mdata.mod["rna"]`: RNA count matrix
-- `mdata.mod["prot"]`: ADT protein count matrix
-
-Raw RNA counts are stored in:
-
-- `mdata.mod["rna"].layers["counts"]`
-
-The preprocessed multimodal object is saved locally as:
-
-- `data/processed/malt_citeseq_mudata.h5mu`
-
-
----
-
-## 5. Second notebook: totalVI model training
-
-The second notebook of the workflow is:
-
-`notebooks/02_totalVI_MALT_model_training.ipynb`
-
-This notebook uses the preprocessed MuData object generated in the first notebook:
-
-`data/processed/malt_citeseq_mudata.h5mu`
-
-The RNA and ADT protein modalities are converted into the AnnData format expected by `totalVI`.
-
-The model is trained for 100 epochs and an integrated RNA + ADT latent representation is extracted:
-
-`adata.obsm["X_totalVI"]`
-
-The resulting latent space has shape:
-
-`8412 cells × 20 latent dimensions`
-
-The trained outputs are saved locally as:
-
-- `data/processed/malt_totalvi_trained.h5ad`
-- `results/models/totalvi_malt_model/`
-
-
----
-
-## 6. Third notebook: latent space visualization
-
-The third notebook of the workflow will be:
-
-`notebooks/03_totalVI_MALT_latent_visualization.ipynb`
-
-This notebook will use the trained AnnData object generated in the second notebook:
-
-`data/processed/malt_totalvi_trained.h5ad`
-
-The objective of this notebook is to:
-
-1. load the trained AnnData object;
-2. use the integrated latent representation stored in `adata.obsm["X_totalVI"]`;
-3. compute the neighborhood graph using the totalVI latent space;
-4. generate a UMAP embedding;
-5. perform Leiden clustering;
-6. visualize the integrated latent space.
-
-The main downstream analysis will use:
-
-`adata.obsm["X_totalVI"]`
-
-This representation contains the integrated RNA + ADT protein information learned by `totalVI`.
