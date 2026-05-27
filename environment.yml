@@ -14,6 +14,7 @@ dependencies:
   - requests
   - leidenalg
   - python-igraph
+  - scikit-misc
   - pip:
       - scanpy
       - scvi-tools
