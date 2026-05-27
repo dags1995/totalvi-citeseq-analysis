@@ -15,6 +15,7 @@ data/processed/*
 *.mtx.gz
 *.tsv.gz
 *.csv.gz
+!*.gitkeep
 
 # Models and results
 results/models/*
