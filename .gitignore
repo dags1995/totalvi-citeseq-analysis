@@ -24,8 +24,14 @@ data/processed/**
 !data/processed/
 !data/processed/.gitkeep
 
+# Keep result folder structure
+!results/figures/
+!results/models/
+!results/longitudinal_comparison/
+
 # Models and results
 results/models/*
+results/figures/*
 *.pt
 *.ckpt
 *.png
