@@ -275,4 +275,74 @@ At the current stage, the trained model uses only T1 and T2 from the tutorial da
 
 ---
 
+## 6. Third notebook: totalVI latent space visualization and downstream analysis
 
+The third notebook of the workflow is:
+
+```text
+notebooks/03_totalVI_latent_visualization.ipynb
+```
+
+This notebook loads the trained MuData object and totalVI model generated in the previous step:
+
+```text
+data/processed/citeseq_longitudinal_totalvi_trained.h5mu
+results/models/totalvi_longitudinal_model/
+```
+
+The notebook follows the downstream analysis workflow from the totalVI tutorial. It extracts the main totalVI outputs from the trained model, including:
+
+- the totalVI latent representation;
+- denoised RNA expression;
+- denoised protein expression;
+- protein foreground probability.
+
+The totalVI latent representation is stored in:
+
+```python
+mdata.mod["rna_subset"].obsm["X_totalVI"]
+```
+
+This representation is used to compute:
+
+- neighborhood graph;
+- UMAP embedding;
+- Leiden clusters.
+
+The Leiden clusters are stored in:
+
+```python
+mdata.mod["rna_subset"].obs["leiden_totalVI"]
+```
+
+The UMAP embedding is stored in:
+
+```python
+mdata.mod["rna_subset"].obsm["X_umap"]
+```
+
+The notebook then visualizes:
+
+- totalVI UMAP colored by batch and Leiden cluster;
+- denoised protein expression on the UMAP;
+- protein foreground probability on the UMAP.
+
+It also performs one-vs-all differential expression using the trained totalVI model. Each Leiden cluster is compared against all remaining cells, and the results include both genes and proteins in the same table.
+
+The differential expression results are saved as:
+
+```text
+results/longitudinal_comparison/totalvi_differential_expression_leiden.csv
+```
+
+Representative marker genes and proteins are selected for each Leiden cluster from the differential expression table. These markers are used to support cluster interpretation and downstream summary visualizations.
+
+The notebook also computes dendrograms to order Leiden clusters according to their similarity in the totalVI latent space and generates a matrix plot of denoised protein expression per cluster.
+
+The final visualization-ready MuData object is saved as:
+
+```text
+data/processed/citeseq_longitudinal_totalvi_umap.h5mu
+```
+
+At the current stage, all downstream analyses use the two active tutorial samples, T1 and T2. When T3 and T4 are added, this notebook should work without major changes as long as the previous notebooks generate the trained MuData object with the same internal structure.
