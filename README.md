@@ -45,8 +45,7 @@ totalvi-citeseq-analysis/
 ├── environment.yml
 ├── notebooks/
 │   ├── 01_totalVI_CITEseq_preprocessing.ipynb
-│   ├── 02_totalVI_multisample_integration.ipynb
-│   ├── 03_totalVI_model_training.ipynb
+│   ├── 02_totalVI_model_training.ipynb
 │   └── 04_totalVI_latent_visualization.ipynb
 ├── scripts/
 ├── data/
@@ -227,4 +226,53 @@ data/processed/T2/t2_citeseq_mudata.h5mu
 T3 and T4 are included as placeholders but are not executed in the current tutorial-based test.
 
 ---
+
+## 5. Second notebook: totalVI model training
+
+The second notebook of the workflow is:
+
+```text
+notebooks/02_totalVI_model_training.ipynb
+```
+
+This notebook loads the preprocessed MuData object generated in the first notebook:
+
+```text
+data/processed/citeseq_longitudinal_preprocessed.h5mu
+```
+
+The object already contains the active tutorial samples T1 and T2 merged into a single MuData object, with the following modalities:
+
+- `rna`: complete RNA modality
+- `prot`: shared ADT protein modality
+- `rna_subset`: RNA modality restricted to highly variable genes
+
+The goal of this notebook is to train a totalVI model using:
+
+- RNA counts from `mdata.mod["rna_subset"].layers["counts"]`
+- ADT protein data from `mdata.mod["prot"].X`
+- batch information from `mdata.mod["rna_subset"].obs["batch"]`
+
+The notebook follows the `setup_mudata()` workflow from scvi-tools and trains a totalVI model directly from the MuData object.
+
+After training, the notebook generates a training history plot based on the negative ELBO values for the training and validation sets.
+
+The main outputs are saved as:
+
+```text
+data/processed/citeseq_longitudinal_totalvi_trained.h5mu
+results/models/totalvi_longitudinal_model/
+results/figures/totalvi_training_elbo.png
+```
+
+The trained MuData object includes the totalVI latent representation stored in:
+
+```text
+mdata.mod["rna_subset"].obsm["X_totalVI"]
+```
+
+At the current stage, the trained model uses only T1 and T2 from the tutorial dataset. The same structure is intended to support future inclusion of T3 and T4 samples.
+
+---
+
 
